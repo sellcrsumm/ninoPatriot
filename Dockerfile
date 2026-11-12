@@ -1,24 +1,16 @@
-# Use Node.js LTS version
-FROM node:20-alpine
+# Playwright image includes Chromium + system deps needed to bypass Cloudflare pages
+FROM mcr.microsoft.com/playwright:v1.48.2-jammy
 
-# Install build dependencies for native modules
-RUN apk add --no-cache python3 make g++
-
-# Set working directory
 WORKDIR /app
 
-# Copy package files
 COPY package*.json ./
+RUN npm install --omit=dev
 
-# Install dependencies
-RUN npm install
-
-# Copy application files
 COPY index.mjs ./
 
-# Expose port for health checks (Railway will set PORT env variable)
+ENV NODE_ENV=production
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
 EXPOSE 3000
 
-# Run the application
 CMD ["node", "index.mjs"]
-
