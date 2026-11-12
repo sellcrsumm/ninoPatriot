@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: myhome-automation
+    name: ninoPatriot
     runtime: docker
     dockerfilePath: ./Dockerfile
     dockerContext: .

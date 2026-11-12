@@ -1,5 +1,6 @@
-//count - https://api-statements.tnet.ge/v1/statements/count?deal_types=1&real_estate_types=1&cities=1&districts=6&currency_id=1&urbans=63&page=1
-//info  - https://api-statements.tnet.ge/v1/statements?deal_types=1&real_estate_types=1&cities=1&districts=6&currency_id=1&urbans=63&page=1
+//count - https://api-statements.tnet.ge/v1/statements/count?deal_types=2&real_estate_types=1,5&cities=1&urbans=101,28,38,42,43,47,63,64,65,66,67,61,62,107,57,23,24,25,27,103,26,10,11&districts=4,6,3,1&currency_id=1&price_to=1200&area_from=60&area_types=1&page=1
+//info  - https://api-statements.tnet.ge/v1/statements?deal_types=2&real_estate_types=1,5&cities=1&urbans=101,28,38,42,43,47,63,64,65,66,67,61,62,107,57,23,24,25,27,103,26,10,11&districts=4,6,3,1&currency_id=1&price_to=1200&area_from=60&area_types=1&page=1
+//web   - https://www.myhome.ge/udzravi-qoneba/qiravdeba/bina/tbilisi/lisis-mimdebared/?deal_types=2&real_estate_types=1,5&cities=1&urbans=101,28,38,42,43,47,63,64,65,66,67,61,62,107,57,23,24,25,27,103,26,10,11&districts=4,6,3,1&currency_id=1&price_to=1200&area_from=60&area_types=1&page=1
 //mandatory header - X-Website-Key : myhome
 import TelegramBot from 'node-telegram-bot-api';
 import axios from 'axios';
@@ -15,26 +16,16 @@ import http from 'http';
 const API_URL = 'https://api-statements.tnet.ge/v1/statements';
 const API_COUNT_URL = 'https://api-statements.tnet.ge/v1/statements/count';
 const FILTERS = {
-
-    deal_types: 1,
-    real_estate_types: 1,
+    deal_types: 2,
+    real_estate_types: [1, 5],
     cities: 1,
-    urbans: [23, 29, 53, 59, 2, 6, 10, 78, 24],
-    districts: [3, 4, 5, 1],
-    currency_id: 2,
-    price_from: 70000,
-    price_to: 130000,
-    area_from: 90,
-    area_to: 150,
+    urbans: [101, 28, 38, 42, 43, 47, 63, 64, 65, 66, 67, 61, 62, 107, 57, 23, 24, 25, 27, 103, 26, 10, 11],
+    districts: [4, 6, 3, 1],
+    currency_id: 1,
+    price_to: 1200,
+    area_from: 60,
     area_types: 1,
-    conditions: 1,
-    bedroom_types: 3,
-    room_types: 4,
-    floor_from: 4,
-    floor_to: 30,
-    not_first: 1,
     page: 1
-
 };
 
 const headers = {
@@ -86,7 +77,7 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, {'Content-Type': 'application/json'});
         res.end(JSON.stringify({
             status: 'ok',
-            service: 'myhome-automation',
+            service: 'ninoPatriot',
             uptime: process.uptime()
         }));
     } else {
@@ -138,23 +129,23 @@ const fetchCars = async () => {
 
             for (let realEstate of realestates) {
                 const realEstateId = realEstate.id;
-                const price = realEstate.price['2'].price_total;
-                const priceSquare = realEstate.price['2'].price_square;
+                const price = realEstate.price['1'].price_total;
+                const priceSquare = realEstate.price['1'].price_square;
                 const realEstateUrl = `https://www.myhome.ge/pr/${realEstateId}/details/`;
                 const title = realEstate.dynamic_title;
 
                 if (isFirstRun) {
-                    // Only save car IDs during the first iteration
+                    // Only save listing IDs during the first iteration
                     StoreRealEstateIds.set(realEstateId, price);
                 } else {
                     if (!StoreRealEstateIds.has(realEstateId)) {
-                        // New car ID found
+                        // New listing ID found
                         StoreRealEstateIds.set(realEstateId, price);
                         try {
                             await bot.sendMessage(CHAT_ID,
                                 `დაემატა ახალი:\n` +
-                                `ფასი: $${price}\n` +
-                                `კვ.მ: $${priceSquare}\n` +
+                                `ფასი: ${price}₾\n` +
+                                `კვ.მ: ${priceSquare}₾\n` +
                                 `${realEstateUrl}`);
                         } catch (telegramError) {
                             console.error('Error sending Telegram message:', telegramError.message);
@@ -168,9 +159,9 @@ const fetchCars = async () => {
                         try {
                             await bot.sendMessage(CHAT_ID,
                                 `Price change detected: \n` +
-                                `Previous Price:   $${previousPrice}\n` +
-                                `Current Price:    $${price}\n` +
-                                `Price Difference: $${priceDifference}\n` +
+                                `Previous Price:   ${previousPrice}₾\n` +
+                                `Current Price:    ${price}₾\n` +
+                                `Price Difference: ${priceDifference}₾\n` +
                                 `${realEstateUrl}`);
                         } catch (telegramError) {
                             console.error('Error sending Telegram message:', telegramError.message);
